@@ -30,10 +30,16 @@ So the spec sheet can't drift from what ships.
 ## Install the skill
 
 ```bash
+npx skills add diip3sh/exploded
+```
+
+It works with Claude Code, Cursor, Codex and any other agent that reads skills. Or clone it yourself:
+
+```bash
 git clone https://github.com/diip3sh/exploded ~/.claude/skills/exploded
 ```
 
-Restart Claude Code, then:
+Restart your agent, then:
 
 ```
 /exploded document our Button, all states, for the Next.js docs
