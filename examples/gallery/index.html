@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exploded · gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../runtime/exploded.css" data-xp-own>
+<style>
+  /* ───────── page */
+  body { margin: 0; background: #fbfbfa; color: #1b1b1a; font: 15px/1.6 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 1040px; margin: 0 auto; padding: 72px 28px 120px; }
+  header { max-width: 640px; margin-bottom: 56px; }
+  header h1 { font-size: 15px; font-weight: 600; margin: 0 0 6px; }
+  header h1 span { color: #8d8c88; font-weight: 400; }
+  header p { margin: 0; color: #4a4a47; }
+  section { margin: 0 0 88px; }
+  section h2 { font: 500 13px/1.4 ui-monospace, Menlo, monospace; color: #8d8c88; margin: 0 0 18px; }
+
+  /* ───────── design tokens (the component library under test) */
+  :root {
+    --font-sans: Inter, system-ui, sans-serif;
+    --color-accent-400: #7c7cf0;
+    --color-accent-500: #5b5bd6;
+    --color-accent-600: #4f4fc4;
+    --color-accent-700: #3e3ea8;
+    --color-ring: rgba(91, 91, 214, 0.22);
+    --color-danger: #e5484d;
+    --color-danger-ring: rgba(229, 72, 77, 0.18);
+    --color-surface: #ffffff;
+    --color-surface-2: #f4f4f2;
+    --color-border: #e3e2de;
+    --color-border-strong: #c9c8c3;
+    --color-text: #1b1b1a;
+    --color-text-muted: #6f6e69;
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-full: 999px;
+    --spacing: 4px;
+    --shadow-xs: 0 1px 2px rgba(16, 16, 20, 0.06);
+    --shadow-sm: 0 1px 2px rgba(16, 16, 20, 0.06), 0 4px 10px -3px rgba(16, 16, 20, 0.14);
+    --shadow-md: 0 1px 2px rgba(16, 16, 20, 0.05), 0 10px 24px -8px rgba(16, 16, 20, 0.18);
+    --highlight: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  }
+
+  /* ───────── Button */
+  .btn {
+    display: inline-flex; align-items: center; gap: calc(var(--spacing) * 2);
+    height: 40px; padding: 0 calc(var(--spacing) * 2.5) 0 calc(var(--spacing) * 3.5);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-accent-700);
+    background-color: var(--color-accent-500);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 60%);
+    color: #fff; font: 500 14px/20px var(--font-sans); letter-spacing: -0.006em;
+    box-shadow: var(--highlight), var(--shadow-sm);
+    cursor: pointer;
+    transition: background-color 0.15s, box-shadow 0.15s, transform 0.1s;
+  }
+  .btn svg { width: 16px; height: 16px; flex: none; }
+  .btn:hover { background-color: var(--color-accent-600); }
+  .btn:focus-visible { outline: none; box-shadow: var(--highlight), var(--shadow-sm), 0 0 0 2px #fff, 0 0 0 4px var(--color-accent-500); }
+  .btn:active { transform: translateY(1px); background-color: var(--color-accent-700); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+  .btn-kbd {
+    display: inline-flex; align-items: center; height: 22px; padding: 0 6px; margin-left: 2px;
+    border-radius: var(--radius-xs);
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+    font: 500 12px/1 var(--font-sans); color: rgba(255, 255, 255, 0.86);
+  }
+
+  /* ───────── Field */
+  .field { display: flex; flex-direction: column; gap: calc(var(--spacing) * 1.5); width: 300px; font-family: var(--font-sans); }
+  .field label { font: 500 13px/18px var(--font-sans); color: var(--color-text); }
+  .field input {
+    height: 40px; padding: 0 calc(var(--spacing) * 3);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    font: 400 14px/20px var(--font-sans); color: var(--color-text);
+    box-shadow: var(--shadow-xs);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .field input::placeholder { color: #a3a29d; }
+  .field input:hover { border-color: var(--color-border-strong); }
+  .field input:focus { border-color: var(--color-accent-500); box-shadow: var(--shadow-xs), 0 0 0 3px var(--color-ring); }
+  .field input[aria-invalid="true"] { border-color: var(--color-danger); }
+  .field input[aria-invalid="true"]:focus { box-shadow: var(--shadow-xs), 0 0 0 3px var(--color-danger-ring); }
+  .field input:disabled { background: var(--color-surface-2); color: #a3a29d; box-shadow: none; }
+  .field .hint { font: 400 12px/16px var(--font-sans); color: var(--color-text-muted); }
+  .field:has(input[aria-invalid="true"]) .hint { color: var(--color-danger); }
+
+  /* ───────── Switch */
+  .switch {
+    all: unset; box-sizing: border-box;
+    position: relative; display: inline-flex; align-items: center;
+    width: 44px; height: 26px; padding: 3px;
+    border-radius: var(--radius-full);
+    background: #dcdbd6;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .switch .thumb {
+    display: block; width: 20px; height: 20px;
+    border-radius: var(--radius-full);
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 2px 6px -1px rgba(0, 0, 0, 0.14);
+    transition: transform 0.2s cubic-bezier(.3,.7,.4,1);
+  }
+  .switch:hover { background: #cfcec8; }
+  .switch[aria-checked="true"] { background: var(--color-accent-500); }
+  .switch[aria-checked="true"] .thumb { transform: translateX(18px); }
+  .switch:focus-visible { outline: 2px solid var(--color-accent-500); outline-offset: 2px; }
+  .switch:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* ───────── Card */
+  .card {
+    width: 340px; box-sizing: border-box;
+    padding: calc(var(--spacing) * 4);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-md);
+    font-family: var(--font-sans);
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .card:hover { box-shadow: 0 1px 2px rgba(16, 16, 20, 0.05), 0 18px 36px -12px rgba(16, 16, 20, 0.24); }
+  .card:focus-within { outline: 2px solid var(--color-accent-500); outline-offset: 3px; }
+  .card-head { display: flex; align-items: center; gap: calc(var(--spacing) * 3); }
+  .avatar {
+    display: grid; place-items: center; width: 36px; height: 36px; flex: none;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, #f6b38e, #e5484d);
+    font: 600 13px/1 var(--font-sans); color: #fff;
+  }
+  .who { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .who strong { font: 600 14px/20px var(--font-sans); color: var(--color-text); }
+  .who span { font: 400 12px/16px var(--font-sans); color: var(--color-text-muted); }
+  .badge {
+    display: inline-flex; align-items: center; height: 20px; padding: 0 8px;
+    border-radius: var(--radius-full);
+    background: #ecebfd; color: var(--color-accent-600);
+    font: 500 11px/1 var(--font-sans);
+  }
+  .card p { margin: calc(var(--spacing) * 3) 0 calc(var(--spacing) * 4); font: 400 14px/21px var(--font-sans); color: #3d3d3a; }
+  .card-actions { display: flex; justify-content: flex-end; gap: calc(var(--spacing) * 2); }
+  .btn-ghost, .btn-soft {
+    all: unset; box-sizing: border-box; display: inline-flex; align-items: center; height: 32px; padding: 0 12px;
+    border-radius: var(--radius-sm); font: 500 13px/1 var(--font-sans); cursor: pointer;
+  }
+  .btn-ghost { color: var(--color-text-muted); }
+  .btn-soft { background: var(--color-surface-2); color: var(--color-text); box-shadow: inset 0 0 0 1px var(--color-border); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Exploded <span>· live spec sheets for UI components</span></h1>
+    <p>Each figure is the real component below it, cloned once per paint layer with the browser's own computed styles. Nothing is redrawn and every number is read from layout.</p>
+  </header>
+
+  <section><h2>01 · Button</h2><div id="fig-button"></div></section>
+  <section><h2>02 · Text field</h2><div id="fig-field"></div></section>
+  <section><h2>03 · Switch</h2><div id="fig-switch"></div></section>
+  <section><h2>04 · Card</h2><div id="fig-card"></div></section>
+
+  <!-- The specimens. Exploded moves each into its figure's margin. -->
+  <div hidden>
+    <button class="btn" id="btn">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5"/></svg>
+      Deploy
+      <span class="btn-kbd">⌘D</span>
+    </button>
+
+    <div class="field" id="field">
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="you@company.com">
+      <span class="hint">We'll send a magic link. No password.</span>
+    </div>
+
+    <button class="switch" id="switch" role="switch" aria-checked="false" aria-label="Notifications"><span class="thumb"></span></button>
+
+    <article class="card" id="card">
+      <div class="card-head">
+        <div class="avatar">RM</div>
+        <div class="who"><strong>Rhea Mehta</strong><span>Requested review · 2m</span></div>
+        <span class="badge">New</span>
+      </div>
+      <p>Pricing page v3 is ready. The comparison table now collapses on mobile.</p>
+      <div class="card-actions">
+        <button class="btn-ghost">Dismiss</button>
+        <button class="btn-soft">Review</button>
+      </div>
+    </article>
+  </div>
+</main>
+
+<script src="../../runtime/exploded.js"></script>
+<script>
+  document.fonts.ready.then(() => {
+    window.figs = {
+      button: Exploded.mount(document.getElementById("fig-button"), {
+        fig: 1, title: "Button · primary", target: document.getElementById("btn"), states: "pressable",
+        parts: { ".btn-kbd": "Shortcut chip" },
+      }),
+      field: Exploded.mount(document.getElementById("fig-field"), {
+        fig: 2, title: "Field · email", target: document.getElementById("field"), stateTarget: "input", states: "field",
+        splitStroke: "all",
+      }),
+      switch: Exploded.mount(document.getElementById("fig-switch"), {
+        fig: 3, title: "Switch", target: document.getElementById("switch"),
+        parts: { ".thumb": "Thumb" },
+        states: [
+          { id: "rest", label: "Off" },
+          { id: "on", label: "On", attrs: { "aria-checked": "true" } },
+          { id: "hover", label: "Hover", pseudo: ["hover"] },
+          { id: "focus", label: "Focus", pseudo: ["focus", "focus-visible"], attrs: { "aria-checked": "true" } },
+          { id: "disabled", label: "Disabled", attrs: { disabled: "" } },
+        ],
+      }),
+      card: Exploded.mount(document.getElementById("fig-card"), {
+        fig: 4, title: "Card · review request", target: document.getElementById("card"),
+        parts: { ".avatar": "Avatar", ".badge": "Badge", ".btn-soft": "Button", ".btn-ghost": "Button" },
+        states: [
+          { id: "rest", label: "Rest" },
+          { id: "hover", label: "Hover", pseudo: ["hover"] },
+          { id: "focus", label: "Focus within", pseudo: ["focus-within"] },
+        ],
+      }),
+    };
+    // mount() resolves once every state has been captured.
+    Promise.all(Object.values(window.figs)).then((apis) => Object.keys(window.figs).forEach((k, i) => (window.figs[k] = apis[i])));
+  });
+</script>
+</body>
+</html>

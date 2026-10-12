@@ -1,0 +1,161 @@
+/*! Exploded runtime v0.1 · MIT */
+.xp {
+  --xp-card: #fbfbfa;
+  --xp-page: #fbfbfa;
+  --xp-text: #1b1b1a;
+  --xp-muted: #8d8c88;
+  --xp-faint: rgba(0, 0, 0, 0.07);
+  --xp-line: rgba(0, 0, 0, 0.16);
+  --xp-sheet: rgba(255, 255, 255, 0.5);
+  --xp-sheet-line: rgba(0, 0, 0, 0.13);
+  --xp-mat: rgba(0, 0, 0, 0.018);
+  --xp-lit: #e5484d;
+  --xp-lit-soft: rgba(229, 72, 77, 0.09);
+  --xp-gap: rgba(229, 72, 77, 0.16);
+  --xp-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+  --xp-sans: inherit;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 188px;
+  gap: 28px;
+  align-items: start;
+  font-family: var(--xp-sans);
+  color: var(--xp-text);
+}
+.xp[data-theme="dark"] {
+  --xp-card: #0e0e0f;
+  --xp-page: #0b0b0c;
+  --xp-text: #ececea;
+  --xp-muted: #7c7b78;
+  --xp-faint: rgba(255, 255, 255, 0.06);
+  --xp-line: rgba(255, 255, 255, 0.16);
+  --xp-sheet: rgba(24, 24, 26, 0.5);
+  --xp-sheet-line: rgba(255, 255, 255, 0.13);
+  --xp-mat: rgba(255, 255, 255, 0.02);
+  --xp-lit: #ff6369;
+  --xp-lit-soft: rgba(255, 99, 105, 0.1);
+  --xp-gap: rgba(255, 99, 105, 0.18);
+}
+
+/* ── card */
+.xp-card {
+  position: relative;
+  aspect-ratio: 16 / 11;
+  min-height: 380px;
+  background: var(--xp-card);
+  border-radius: 10px;
+  outline: none;
+  overflow: hidden;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+}
+.xp-card:active { cursor: grabbing; }
+.xp-card:focus-visible { outline: 1px solid var(--xp-muted); outline-offset: 6px; }
+.xp-corner {
+  position: absolute;
+  z-index: 2;
+  font: 11px/1.4 var(--xp-mono);
+  color: var(--xp-muted);
+  letter-spacing: 0.01em;
+  pointer-events: none;
+  max-width: 60%;
+}
+.xp-tl { top: 16px; left: 18px; color: var(--xp-text); }
+.xp-tr { top: 16px; right: 18px; text-align: right; }
+.xp-bl { bottom: 16px; left: 18px; }
+.xp-br { bottom: 16px; right: 18px; text-align: right; color: var(--xp-text); font-variant-numeric: tabular-nums; }
+
+/* ── 3D stage */
+.xp-viewport { position: absolute; inset: 44px 0 40px; perspective: none; }
+.xp-origin { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; }
+.xp-scene { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; }
+.xp-plate { position: absolute; transform-style: flat; }
+.xp-zoom { position: absolute; left: 0; top: 0; pointer-events: none; }
+.xp-paints, .xp-paint { position: absolute; left: 0; top: 0; }
+.xp-paint { opacity: 0; transition: opacity 0.24s ease; }
+.xp-paint.is-on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .xp-paint { transition: none; } }
+.xp-mute-ph::placeholder { color: transparent !important; -webkit-text-fill-color: transparent !important; }
+
+/* A sheet is the glass each layer is printed on. */
+.xp-sheet {
+  position: absolute;
+  border: 1px solid var(--xp-sheet-line);
+  background: var(--xp-sheet);
+  border-radius: 6px;
+  pointer-events: auto;
+  transition: background-color 0.24s ease, border-color 0.24s ease;
+}
+.xp-plate.is-active .xp-sheet { border-color: var(--xp-lit); }
+.xp-plate.is-empty .xp-sheet { border-style: dashed; background: transparent !important; }
+.xp-backing { position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0.74; }
+.xp-backing i { position: absolute; display: block; }
+.xp-sheet i { display: none; }
+
+/* Measurements printed on the active sheet. */
+.xp-lines { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.xp-lines text { font-family: var(--xp-mono); font-size: var(--xp-fs, 6.5px); fill: var(--xp-lit); font-variant-numeric: tabular-nums; }
+.xp-lines .xp-dim { fill: none; stroke: var(--xp-lit); stroke-width: var(--xp-hair, 0.45px); }
+.xp-lines .xp-soft { stroke-dasharray: var(--xp-dash, 1.2px); opacity: 0.7; }
+.xp-lines .xp-pad { fill: var(--xp-lit-soft); stroke: none; }
+.xp-lines .xp-gap { fill: var(--xp-gap); stroke: none; }
+.xp-lines .xp-icon { fill: none; stroke: var(--xp-lit); stroke-width: var(--xp-hair, 0.45px); stroke-dasharray: var(--xp-dash, 1.2px); }
+.xp-lines .xp-cdot { fill: var(--xp-muted); }
+.xp-plate:not(.is-active) .xp-lines .xp-cdot { opacity: 1; }
+
+/* The mat under everything, with rulers read from the model. */
+.xp-mat .xp-lines { opacity: 1 !important; }
+.xp-ruler .xp-matrect { fill: var(--xp-mat); stroke: var(--xp-faint); stroke-width: var(--xp-hair, 0.5px); }
+.xp-ruler .xp-tick { fill: none; stroke: var(--xp-line); stroke-width: var(--xp-hair, 0.4px); }
+.xp-ruler .xp-major { stroke: var(--xp-muted); }
+.xp-ruler text { font-family: var(--xp-mono); font-size: var(--xp-fs, 6px); fill: var(--xp-muted); font-variant-numeric: tabular-nums; }
+
+/* Guides stand on the sheet corners. */
+.xp-guide {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  border-left: 1px dashed var(--xp-line);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+/* ── margin */
+.xp-margin { display: flex; flex-direction: column; gap: 18px; padding-top: 14px; font: 12px/1.45 var(--xp-mono); color: var(--xp-muted); }
+.xp-keys { display: flex; flex-direction: column; gap: 4px; }
+.xp-keys button {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  color: var(--xp-muted);
+  padding: 1px 0;
+}
+.xp-keys button:hover, .xp-keys button.is-on { color: var(--xp-text); }
+.xp-keys kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--xp-faint);
+  font: 10px/1 var(--xp-mono);
+  color: var(--xp-text);
+}
+.xp-keys button.is-on kbd { background: var(--xp-text); color: var(--xp-card); }
+.xp-layers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.xp-layers li { display: flex; align-items: center; gap: 9px; cursor: default; padding: 1px 0; }
+.xp-layers li.is-on { color: var(--xp-lit); }
+.xp-sw { width: 14px; height: 9px; border-radius: 2px; border: 1px solid var(--xp-line); background: var(--xp-sheet); transform: skewX(-30deg); }
+.xp-layers li.is-on .xp-sw { border-color: var(--xp-lit); }
+.xp-live { display: flex; flex-direction: column; gap: 10px; padding-top: 6px; border-top: 1px solid var(--xp-faint); }
+.xp-live-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; padding-top: 10px; }
+.xp-specimen { font-family: var(--xp-specimen-font, system-ui); }
+
+@media (max-width: 720px) {
+  .xp { grid-template-columns: 1fr; }
+  .xp-card { aspect-ratio: 4 / 5; }
+  .xp-margin { flex-direction: row; flex-wrap: wrap; }
+}

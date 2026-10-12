@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exploded · recording</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../../runtime/exploded.css" data-xp-own>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0b0c; color: #ececea; font: 15px/1.6 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { min-height: 100%; display: grid; place-items: center; padding: 48px; box-sizing: border-box; }
+  #fig { width: min(1280px, 100%); }
+  .xp { --xp-card: #0e0e0f; grid-template-columns: minmax(0, 1fr) 200px; }
+  .xp-card { aspect-ratio: 16 / 10; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
+  .xp-card:focus-visible { outline: none; }
+  /* ───────── design tokens (the component library under test) */
+  :root {
+    --font-sans: Inter, system-ui, sans-serif;
+    --color-accent-400: #7c7cf0;
+    --color-accent-500: #5b5bd6;
+    --color-accent-600: #4f4fc4;
+    --color-accent-700: #3e3ea8;
+    --color-ring: rgba(91, 91, 214, 0.22);
+    --color-danger: #e5484d;
+    --color-danger-ring: rgba(229, 72, 77, 0.18);
+    --color-surface: #ffffff;
+    --color-surface-2: #f4f4f2;
+    --color-border: #e3e2de;
+    --color-border-strong: #c9c8c3;
+    --color-text: #1b1b1a;
+    --color-text-muted: #6f6e69;
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-full: 999px;
+    --spacing: 4px;
+    --shadow-xs: 0 1px 2px rgba(16, 16, 20, 0.06);
+    --shadow-sm: 0 1px 2px rgba(16, 16, 20, 0.06), 0 4px 10px -3px rgba(16, 16, 20, 0.14);
+    --shadow-md: 0 1px 2px rgba(16, 16, 20, 0.05), 0 10px 24px -8px rgba(16, 16, 20, 0.18);
+    --highlight: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  }
+
+  /* ───────── Button */
+  .btn {
+    display: inline-flex; align-items: center; gap: calc(var(--spacing) * 2);
+    height: 40px; padding: 0 calc(var(--spacing) * 2.5) 0 calc(var(--spacing) * 3.5);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-accent-700);
+    background-color: var(--color-accent-500);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 60%);
+    color: #fff; font: 500 14px/20px var(--font-sans); letter-spacing: -0.006em;
+    box-shadow: var(--highlight), var(--shadow-sm);
+    cursor: pointer;
+    transition: background-color 0.15s, box-shadow 0.15s, transform 0.1s;
+  }
+  .btn svg { width: 16px; height: 16px; flex: none; }
+  .btn:hover { background-color: var(--color-accent-600); }
+  .btn:focus-visible { outline: none; box-shadow: var(--highlight), var(--shadow-sm), 0 0 0 2px #fff, 0 0 0 4px var(--color-accent-500); }
+  .btn:active { transform: translateY(1px); background-color: var(--color-accent-700); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+  .btn-kbd {
+    display: inline-flex; align-items: center; height: 22px; padding: 0 6px; margin-left: 2px;
+    border-radius: var(--radius-xs);
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+    font: 500 12px/1 var(--font-sans); color: rgba(255, 255, 255, 0.86);
+  }
+
+</style>
+</head>
+<body>
+<main><div id="fig"></div></main>
+<div hidden>
+  <button class="btn" id="btn">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5"/></svg>
+    Deploy
+    <span class="btn-kbd">⌘D</span>
+  </button>
+</div>
+<script src="../../runtime/exploded.js"></script>
+<script>
+  document.fonts.ready.then(() => {
+    window.fig = Exploded.mount(document.getElementById("fig"), {
+      fig: 1, title: "Button · primary", target: document.getElementById("btn"), states: "pressable",
+      parts: { ".btn-kbd": "Shortcut chip" }, theme: "dark", tour: false, stack: 0.46,
+    });
+    document.querySelector(".xp-card").focus({ preventScroll: true });
+  });
+</script>
+</body>
+</html>
