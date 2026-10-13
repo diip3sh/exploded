@@ -6,7 +6,7 @@ Name a component and Claude renders it, then pulls it apart in isometric into it
 
 [![Exploded: a primary button pulled apart into six paint layers, with its focus ring lit](assets/poster.jpg)](assets/demo.mp4)
 
-**[Live demo](https://diip3sh.github.io/exploded/)** · **[Gallery](https://diip3sh.github.io/exploded/examples/gallery/)** · **[Watch the video](assets/demo.mp4)**
+**[Live demo](https://diip3sh.github.io/exploded/)** · **[Watch the video](assets/demo.mp4)**
 
 ## The rule
 

@@ -4,24 +4,59 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Exploded · take a real UI component apart</title>
-<meta name="description" content="A Claude Code skill and runtime that explodes a live UI component into its paint layers, states and tokens. Nothing is redrawn, no number is typed.">
+<meta name="description" content="A skill for coding agents that explodes a live UI component into its paint layers, states and tokens. Nothing is redrawn, no number is typed.">
 <meta property="og:image" content="assets/poster.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="runtime/exploded.css" data-xp-own>
 <style>
-  html, body { margin: 0; height: 100%; background: #0b0b0c; color: #ececea; font: 15px/1.6 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
-  main { min-height: 100%; display: grid; place-items: center; align-content: center; gap: 28px; padding: 48px; box-sizing: border-box; }
-  header { width: min(1280px, 100%); display: flex; justify-content: space-between; align-items: baseline; gap: 24px; flex-wrap: wrap; }
-  header h1 { margin: 0; font-size: 15px; font-weight: 600; }
-  header h1 span { color: #7c7b78; font-weight: 400; }
-  header nav { display: flex; gap: 18px; font: 12px/1 ui-monospace, Menlo, monospace; }
-  header a { color: #ececea; text-decoration: none; opacity: .7; }
-  header a:hover { opacity: 1; }
-  #fig { width: min(1280px, 100%); }
-  .xp { --xp-card: #0e0e0f; grid-template-columns: minmax(0, 1fr) 200px; }
-  .xp-card { aspect-ratio: 16 / 10; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
-  .xp-card:focus-visible { outline: none; }
+  /* ───────── page */
+  body { margin: 0; background: #fbfbfa; color: #1b1b1a; font: 15px/1.6 Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 1040px; margin: 0 auto; padding: 72px 28px 120px; }
+  header { max-width: 640px; margin-bottom: 56px; }
+  header h1 { font-size: 15px; font-weight: 600; margin: 0 0 6px; }
+  header h1 span { color: #8d8c88; font-weight: 400; }
+  header p { margin: 0; color: #4a4a47; }
+  header nav { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 18px; font: 500 13px/1.4 ui-monospace, Menlo, monospace; }
+  header nav a { color: #8d8c88; text-decoration: none; }
+  header nav a:hover { color: #1b1b1a; }
+  section { margin: 0 0 88px; scroll-margin-top: 32px; }
+  section h2 { font: 500 13px/1.4 ui-monospace, Menlo, monospace; color: #8d8c88; margin: 0 0 18px; }
+  .doc { max-width: 640px; }
+  .doc p { margin: 14px 0 0; color: #4a4a47; }
+  .doc ul { margin: 16px 0 0; padding-left: 18px; color: #4a4a47; display: grid; gap: 6px; }
+  .doc li::marker { color: #b5b4af; }
+  .doc b { color: #1b1b1a; font-weight: 600; }
+  .doc code:not(.cmd code) { font: .88em ui-monospace, Menlo, monospace; padding: 1px 5px; border-radius: 4px; background: #f0efec; }
+
+  .cmd { display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 4px 0 14px; margin-top: 10px; box-sizing: border-box;
+    border-radius: 10px; background: #fff; box-shadow: inset 0 0 0 1px #e6e5e1, 0 1px 2px rgba(16, 16, 20, .04); }
+  .cmd code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; scrollbar-width: none; font: 13.5px/1 ui-monospace, Menlo, monospace; }
+  .cmd code::before { content: "$ "; color: #b5b4af; }
+  .cmd.slash code::before { content: none; }
+  .copy { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border: 0; border-radius: 7px; background: transparent; color: #8d8c88; cursor: pointer; transition: background .15s, color .15s; }
+  .copy:hover { background: #f4f4f2; color: #1b1b1a; }
+  .copy:focus-visible { outline: 2px solid #5b5bd6; outline-offset: 1px; }
+  .copy svg { width: 15px; height: 15px; }
+  .copy .done { display: none; color: #5b5bd6; }
+  .copy.is-done .idle { display: none; }
+  .copy.is-done .done { display: block; }
+  header .cmd { margin-top: 24px; max-width: 420px; }
+
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .steps li { display: grid; grid-template-columns: 34px 1fr; color: #4a4a47; }
+  .steps .n { color: #b5b4af; font: 12px/1.95 ui-monospace, Menlo, monospace; }
+  .keys { display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 0; align-items: center; color: #4a4a47; }
+  .keys dt { display: flex; gap: 5px; align-items: center; color: #8d8c88; }
+  .keys dd { margin: 0; }
+  kbd { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px; box-sizing: border-box; border-radius: 5px;
+    background: #fff; box-shadow: inset 0 0 0 1px #e3e2de, 0 1px 0 #e3e2de; font: 500 12px/1 ui-monospace, Menlo, monospace; color: #1b1b1a; }
+
+  footer { padding-top: 28px; border-top: 1px solid #ecebe7; color: #8d8c88; font-size: 13px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; }
+  footer a { color: #4a4a47; }
+
+  @media (max-width: 640px) { main { padding: 40px 16px 80px; } }
+
   /* ───────── design tokens (the component library under test) */
   :root {
     --font-sans: Inter, system-ui, sans-serif;
@@ -76,29 +111,236 @@
     font: 500 12px/1 var(--font-sans); color: rgba(255, 255, 255, 0.86);
   }
 
+  /* ───────── Field */
+  .field { display: flex; flex-direction: column; gap: calc(var(--spacing) * 1.5); width: 300px; font-family: var(--font-sans); }
+  .field label { font: 500 13px/18px var(--font-sans); color: var(--color-text); }
+  .field input {
+    height: 40px; padding: 0 calc(var(--spacing) * 3);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    font: 400 14px/20px var(--font-sans); color: var(--color-text);
+    box-shadow: var(--shadow-xs);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .field input::placeholder { color: #a3a29d; }
+  .field input:hover { border-color: var(--color-border-strong); }
+  .field input:focus { border-color: var(--color-accent-500); box-shadow: var(--shadow-xs), 0 0 0 3px var(--color-ring); }
+  .field input[aria-invalid="true"] { border-color: var(--color-danger); }
+  .field input[aria-invalid="true"]:focus { box-shadow: var(--shadow-xs), 0 0 0 3px var(--color-danger-ring); }
+  .field input:disabled { background: var(--color-surface-2); color: #a3a29d; box-shadow: none; }
+  .field .hint { font: 400 12px/16px var(--font-sans); color: var(--color-text-muted); }
+  .field:has(input[aria-invalid="true"]) .hint { color: var(--color-danger); }
+
+  /* ───────── Switch */
+  .switch {
+    all: unset; box-sizing: border-box;
+    position: relative; display: inline-flex; align-items: center;
+    width: 44px; height: 26px; padding: 3px;
+    border-radius: var(--radius-full);
+    background: #dcdbd6;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .switch .thumb {
+    display: block; width: 20px; height: 20px;
+    border-radius: var(--radius-full);
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 2px 6px -1px rgba(0, 0, 0, 0.14);
+    transition: transform 0.2s cubic-bezier(.3,.7,.4,1);
+  }
+  .switch:hover { background: #cfcec8; }
+  .switch[aria-checked="true"] { background: var(--color-accent-500); }
+  .switch[aria-checked="true"] .thumb { transform: translateX(18px); }
+  .switch:focus-visible { outline: 2px solid var(--color-accent-500); outline-offset: 2px; }
+  .switch:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* ───────── Card */
+  .card {
+    width: 340px; box-sizing: border-box;
+    padding: calc(var(--spacing) * 4);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-md);
+    font-family: var(--font-sans);
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .card:hover { box-shadow: 0 1px 2px rgba(16, 16, 20, 0.05), 0 18px 36px -12px rgba(16, 16, 20, 0.24); }
+  .card:focus-within { outline: 2px solid var(--color-accent-500); outline-offset: 3px; }
+  .card-head { display: flex; align-items: center; gap: calc(var(--spacing) * 3); }
+  .avatar {
+    display: grid; place-items: center; width: 36px; height: 36px; flex: none;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, #f6b38e, #e5484d);
+    font: 600 13px/1 var(--font-sans); color: #fff;
+  }
+  .who { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .who strong { font: 600 14px/20px var(--font-sans); color: var(--color-text); }
+  .who span { font: 400 12px/16px var(--font-sans); color: var(--color-text-muted); }
+  .badge {
+    display: inline-flex; align-items: center; height: 20px; padding: 0 8px;
+    border-radius: var(--radius-full);
+    background: #ecebfd; color: var(--color-accent-600);
+    font: 500 11px/1 var(--font-sans);
+  }
+  .card p { margin: calc(var(--spacing) * 3) 0 calc(var(--spacing) * 4); font: 400 14px/21px var(--font-sans); color: #3d3d3a; }
+  .card-actions { display: flex; justify-content: flex-end; gap: calc(var(--spacing) * 2); }
+  .btn-ghost, .btn-soft {
+    all: unset; box-sizing: border-box; display: inline-flex; align-items: center; height: 32px; padding: 0 12px;
+    border-radius: var(--radius-sm); font: 500 13px/1 var(--font-sans); cursor: pointer;
+  }
+  .btn-ghost { color: var(--color-text-muted); }
+  .btn-soft { background: var(--color-surface-2); color: var(--color-text); box-shadow: inset 0 0 0 1px var(--color-border); }
 </style>
 </head>
 <body>
+<template id="copy-icons">
+  <svg class="idle" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.8"/><path d="M10.5 5.5V4.3c0-1-.8-1.8-1.8-1.8H4.3c-1 0-1.8.8-1.8 1.8v4.4c0 1 .8 1.8 1.8 1.8h1.2"/></svg>
+  <svg class="done" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7"/></svg>
+</template>
+
 <main>
   <header>
-    <h1>Exploded <span>· take a real UI component apart. Nothing is redrawn, no number is typed.</span></h1>
-    <nav><a href="examples/gallery/">Gallery</a><a href="https://github.com/diip3sh/exploded">GitHub</a></nav>
+    <h1>Exploded <span>· take a real UI component apart</span></h1>
+    <p>A skill for coding agents. Name a component and your agent renders it, then pulls it apart into its paint layers. Each figure below is the real component, cloned once per paint layer with the browser's own computed styles. Nothing is redrawn and every number is read from layout.</p>
+    <div class="cmd"><code>npx skills add diip3sh/exploded</code><button class="copy" type="button" aria-label="Copy install command"></button></div>
+    <nav>
+      <a href="#install">Install</a>
+      <a href="#use">How to use it</a>
+      <a href="#how">How it works</a>
+      <a href="#keys">Keys</a>
+      <a href="assets/demo.mp4">Video</a>
+      <a href="https://github.com/diip3sh/exploded">GitHub</a>
+    </nav>
   </header>
-  <div id="fig"></div>
+
+  <section><h2>01 · Button</h2><div id="fig-button"></div></section>
+  <section><h2>02 · Text field</h2><div id="fig-field"></div></section>
+  <section><h2>03 · Switch</h2><div id="fig-switch"></div></section>
+  <section><h2>04 · Card</h2><div id="fig-card"></div></section>
+
+  <section class="doc" id="install">
+    <h2>Install</h2>
+    <div class="cmd"><code>npx skills add diip3sh/exploded</code><button class="copy" type="button" aria-label="Copy install command"></button></div>
+    <p>What you install is one folder: the skill, one script and one stylesheet. There is no npm install, and Node is only needed for the audit. Or clone it:</p>
+    <div class="cmd"><code>git clone https://github.com/diip3sh/exploded ~/.claude/skills/exploded</code><button class="copy" type="button" aria-label="Copy git clone command"></button></div>
+  </section>
+
+  <section class="doc" id="use">
+    <h2>How to use it</h2>
+    <div class="cmd slash"><code>/exploded document our Button, all states, for the Next.js docs</code><button class="copy" type="button" aria-label="Copy example"></button></div>
+    <div class="cmd slash"><code>/exploded spec sheet for the email field and the switch</code><button class="copy" type="button" aria-label="Copy example"></button></div>
+    <ul>
+      <li>Restart your agent after installing, then type the command with the component you want.</li>
+      <li>You don't need the command. Ask for component docs, a spec sheet, redlines or an anatomy diagram and the skill is picked up on its own.</li>
+      <li>Out comes a page like this one: the live component beside its figure. It works framework-free, and in React or Next.js through a wrapper.</li>
+    </ul>
+  </section>
+
+  <section class="doc" id="how">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li><span class="n">01</span><span><b>Size it.</b> One component is a figure, a set of variants is a sheet. It says which before it starts.</span></li>
+      <li><span class="n">02</span><span><b>Find the truth.</b> It reads the component's source for its real states and where its tokens live.</span></li>
+      <li><span class="n">03</span><span><b>Take it apart.</b> Every number comes from <code>getComputedStyle</code>, every token from the CSS rule you wrote.</span></li>
+      <li><span class="n">04</span><span><b>Audit.</b> Every paint lands on exactly one layer, and every layer lays out within 0.5px of the live component, in every state.</span></li>
+    </ol>
+  </section>
+
+  <section class="doc" id="keys">
+    <h2>Keys</h2>
+    <dl class="keys">
+      <dt><kbd>1</kbd>–<kbd>9</kbd></dt><dd>Switch state</dd>
+      <dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>Step through the layers</dd>
+      <dt><kbd>T</kbd></dt><dd>Show the tokens behind every value</dd>
+      <dt><kbd>E</kbd></dt><dd>Pull apart or put together</dd>
+      <dt><kbd>←</kbd><kbd>→</kbd></dt><dd>Turn the stack, or drag it</dd>
+      <dt><kbd>Esc</kbd></dt><dd>Reset</dd>
+    </dl>
+  </section>
+
+  <footer>
+    <span>MIT © diip3sh · Inspired by <a href="https://skills.wheresryan.sh/anatomy">Anatomy</a> by Ryan</span>
+    <a href="https://github.com/diip3sh/exploded">github.com/diip3sh/exploded</a>
+  </footer>
+
+  <!-- The specimens. Exploded moves each into its figure's margin. -->
+  <div hidden>
+    <button class="btn" id="btn">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5"/></svg>
+      Deploy
+      <span class="btn-kbd">⌘D</span>
+    </button>
+
+    <div class="field" id="field">
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="you@company.com">
+      <span class="hint">We'll send a magic link. No password.</span>
+    </div>
+
+    <button class="switch" id="switch" role="switch" aria-checked="false" aria-label="Notifications"><span class="thumb"></span></button>
+
+    <article class="card" id="card">
+      <div class="card-head">
+        <div class="avatar">RM</div>
+        <div class="who"><strong>Rhea Mehta</strong><span>Requested review · 2m</span></div>
+        <span class="badge">New</span>
+      </div>
+      <p>Pricing page v3 is ready. The comparison table now collapses on mobile.</p>
+      <div class="card-actions">
+        <button class="btn-ghost">Dismiss</button>
+        <button class="btn-soft">Review</button>
+      </div>
+    </article>
+  </div>
 </main>
-<div hidden>
-  <button class="btn" id="btn">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5"/></svg>
-    Deploy
-    <span class="btn-kbd">⌘D</span>
-  </button>
-</div>
+
 <script src="runtime/exploded.js"></script>
 <script>
   document.fonts.ready.then(() => {
-    window.fig = Exploded.mount(document.getElementById("fig"), {
-      fig: 1, title: "Button · primary", target: document.getElementById("btn"), states: "pressable",
-      parts: { ".btn-kbd": "Shortcut chip" }, theme: "dark", stack: 0.46,
+    window.figs = {
+      button: Exploded.mount(document.getElementById("fig-button"), {
+        fig: 1, title: "Button · primary", target: document.getElementById("btn"), states: "pressable",
+        parts: { ".btn-kbd": "Shortcut chip" },
+      }),
+      field: Exploded.mount(document.getElementById("fig-field"), {
+        fig: 2, title: "Field · email", target: document.getElementById("field"), stateTarget: "input", states: "field",
+        splitStroke: "all",
+      }),
+      switch: Exploded.mount(document.getElementById("fig-switch"), {
+        fig: 3, title: "Switch", target: document.getElementById("switch"),
+        parts: { ".thumb": "Thumb" },
+        states: [
+          { id: "rest", label: "Off" },
+          { id: "on", label: "On", attrs: { "aria-checked": "true" } },
+          { id: "hover", label: "Hover", pseudo: ["hover"] },
+          { id: "focus", label: "Focus", pseudo: ["focus", "focus-visible"], attrs: { "aria-checked": "true" } },
+          { id: "disabled", label: "Disabled", attrs: { disabled: "" } },
+        ],
+      }),
+      card: Exploded.mount(document.getElementById("fig-card"), {
+        fig: 4, title: "Card · review request", target: document.getElementById("card"),
+        parts: { ".avatar": "Avatar", ".badge": "Badge", ".btn-soft": "Button", ".btn-ghost": "Button" },
+        states: [
+          { id: "rest", label: "Rest" },
+          { id: "hover", label: "Hover", pseudo: ["hover"] },
+          { id: "focus", label: "Focus within", pseudo: ["focus-within"] },
+        ],
+      }),
+    };
+    // mount() resolves once every state has been captured.
+    Promise.all(Object.values(window.figs)).then((apis) => Object.keys(window.figs).forEach((k, i) => (window.figs[k] = apis[i])));
+  });
+  const icons = document.getElementById("copy-icons").innerHTML;
+  document.querySelectorAll(".copy").forEach((b) => {
+    b.innerHTML = icons;
+    b.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(b.previousElementSibling.textContent); } catch (_) { return; }
+      b.classList.add("is-done");
+      setTimeout(() => b.classList.remove("is-done"), 1400);
     });
   });
 </script>
